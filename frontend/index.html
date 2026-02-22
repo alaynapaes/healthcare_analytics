@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Healthcare Analytics Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <h2>Daily Medication Adherence Trend</h2>
+
+  <canvas id="adherenceChart"></canvas>
+
+  <h2>Overall Adherence</h2>
+<canvas id="overallChart"></canvas>
+
+<h2>Adherence by User</h2>
+<canvas id="userChart"></canvas>
+
+
+  <script>
+    async function loadChart() {
+      try {
+        const response = await fetch("http://localhost:3000/analytics/daily");
+        const data = await response.json();
+
+        console.log("API DATA:", data);
+
+        const labels = data.map(item => item.date);
+        const values = data.map(item => Number(item.adherence_percentage));
+
+        const ctx = document.getElementById("adherenceChart");
+
+        new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [{
+              label: "Adherence %",
+              data: values,
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100
+              }
+            }
+          }
+        });
+
+      } catch (error) {
+        console.error("Error loading chart:", error);
+      }
+    }
+
+    async function loadOverall() {
+  const response = await fetch("http://localhost:3000/analytics/overall");
+  const data = await response.json();
+
+  const ctx = document.getElementById("overallChart");
+
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Overall"],
+      datasets: [{
+        label: "Adherence %",
+        data: [Number(data.adherence_percentage)]
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100
+        }
+      }
+    }
+  });
+}
+
+async function loadUserChart() {
+  const response = await fetch("http://localhost:3000/analytics/by-user");
+  const data = await response.json();
+
+  const labels = data.map(item => "User " + item.user_id);
+  const values = data.map(item => Number(item.adherence_percentage));
+
+  const ctx = document.getElementById("userChart");
+
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Adherence %",
+        data: values
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100
+        }
+      }
+    }
+  });
+}
+
+loadChart();
+loadOverall();
+loadUserChart();
+
+  </script>
+
+</body>
+</html>
